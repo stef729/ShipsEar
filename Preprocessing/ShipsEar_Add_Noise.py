@@ -22,10 +22,13 @@ import IPython.display as ipd  # To play sound in the notebook
 
 fname = 'D:/Project/Sound/ShipsEar/Data_frame/6__Passengers_19.wav' 
 data, sampling_rate = librosa.load(fname)
+melspec = librosa.feature.melspectrogram(data, sampling_rate, n_mels=128)
+logmelspec = librosa.power_to_db(melspec)
 plt.figure(figsize=(8,4))
 librosa.display.waveplot(data, sr=sampling_rate)
 ipd.Audio(data, rate=sampling_rate)
-
+plt.figure(figsize=(8,4))
+librosa.display.specshow(logmelspec, y_axis='linear')
 # =============================================================================
 # # 数据增广方法（Augmentations Methods）
 # =============================================================================
@@ -56,14 +59,18 @@ def stretch(data, rate=0.8):
     return data
 
 x = stretch(data)
+melspec = librosa.feature.melspectrogram(x, sampling_rate, n_mels=128)
+logmelspec = librosa.power_to_db(melspec)
 plt.figure(figsize=(8,4))
 librosa.display.waveplot(x, sr=sampling_rate)
+plt.figure(figsize=(8,4))
+librosa.display.specshow(logmelspec, y_axis='linear')
 
 
 # (4) 音调变换，该方法强调高音
 def pitch(data, sample_rate):
     bins_per_octave = 12
-    pitch_pm = 2
+    pitch_pm = -2
     pitch_change = pitch_pm * 2*(np.random.uniform())
     data = librosa.effects.pitch_shift(data.astype('float64'),
                                        sample_rate, n_steps=pitch_change,
@@ -71,8 +78,12 @@ def pitch(data, sample_rate):
     return data
 
 x = pitch(data, sampling_rate)
+melspec = librosa.feature.melspectrogram(x, sampling_rate, n_mels=128)
+logmelspec = librosa.power_to_db(melspec)
 plt.figure(figsize=(8, 4))
 librosa.display.waveplot(x, sr=sampling_rate)
+plt.figure(figsize=(8,4))
+librosa.display.specshow(logmelspec, y_axis='linear')
 
 
 # (5) 动态随机变化
