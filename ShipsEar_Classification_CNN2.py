@@ -8,9 +8,10 @@ Created on Mon Apr 20 22:06:18 2020
 # 特征向量：利用MFCC提取（60，41）维特征，再提取一阶差分，组成特征向量（60，41，2）
 # 样本容量：采用滑窗，每段5s音频提取多个帧，帧移长度 window_size：512*40
 # train：7335； test：2445
-# 90个epoch训练，每次14s
-# （1）最终结果：5各类别，loss:0.28; accuracy:0.92
-# （2）标注数据按照12个类被训练，识别结果[0.23, 0.928]
+# 一维 Mel_spectrogram  90个epoch训练，Test accuracy 0.982
+# 一阶差分 Mel Test accuracy 0.983
+# 一阶差分 Mel， 12分类， Test accuracy 0.988
+
 
 
 import pandas as pd
@@ -77,17 +78,17 @@ def extract_features(path,file_ext="*.wav",bands = 60, frames = 41):
                 labels.append(label)
         print('The file of number %s has done' %i)
     log_specgrams = np.asarray(log_specgrams).reshape(len(log_specgrams),bands,frames,1)
-#    features = log_specgrams
+    # features = log_specgrams
     # 一阶差分， 二维
-    # features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams))), axis = 3)
+    features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams))), axis = 3)
     # 二阶差分，三维
-    features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams)), np.zeros(np.shape(log_specgrams))), axis = 3)
+    # features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams)), np.zeros(np.shape(log_specgrams))), axis = 3)
     for i in range(len(features)):
         # 一阶差分
-        # features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0])
+        features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0])
         # 二阶差分
-        features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0], width=3, order=1) # 一阶差分
-        features[i, :, :, 2] = librosa.feature.delta(features[i, :, :, 0], width=3, order=2) # 二阶差分
+        # features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0], width=3, order=1) # 一阶差分
+        # features[i, :, :, 2] = librosa.feature.delta(features[i, :, :, 0], width=3, order=2) # 二阶差分
     return np.array(features), np.array(labels,dtype = np.int)
         
 
@@ -98,28 +99,28 @@ def extract_features(path,file_ext="*.wav",bands = 60, frames = 41):
 if __name__ == '__main__':
     
     path = 'D:/Project/Sound/ShipsEar/Data_frame/'
-    current_path = os.listdir(path)[:-2]
-    df = pd.read_csv(path + 'label_DataFrame.csv', names= ["Name", "ClassID", "ClassID_2"] )
+    current_path = os.listdir(path)[:-4]
+    df = pd.read_csv(path + 'label_DataFrame_2.csv', names= ["Name", "ClassID", "ClassID_2"] )
     
     feature = []
     labels = []
     
-    if not os.path.isfile('D:/Project/Sound/ShipsEar/Feature model/CNN2_feature_3d_12c.npy'): 
+    if not os.path.isfile('D:/Project/Sound/ShipsEar/Feature model/CNN2_feature_2d_12c.npy'): 
         data_features,labels = extract_features(path)
         data_labels = one_hot_encode(labels)
-        np.save('CNN2_feature_3d_5c',data_features)
-        np.save('CNN2_label_5', data_labels)
+        np.save('CNN2_feature_2d_12c',data_features)
+        np.save('CNN2_label_12', data_labels)
     else:
-        data_features = np.load('D:/Project/Sound/ShipsEar/Feature model/CNN2_feature_3d_12c.npy')
+        data_features = np.load('D:/Project/Sound/ShipsEar/Feature model/CNN2_feature_2d_12c.npy')
         data_labels = np.load('D:/Project/Sound/ShipsEar/Feature model/CNN2_label_12.npy')
     
     
     
 
 X_train, X_test, Y_train, Y_test = train_test_split(data_features, data_labels, random_state = 10)
-X_train = X_train.reshape(X_train.shape[0], 60, 41,3)
-X_test = X_test.reshape(X_test.shape[0], 60, 41,3)
-input_dim = (60, 41,3)
+X_train = X_train.reshape(X_train.shape[0], 60, 41,2)
+X_test = X_test.reshape(X_test.shape[0], 60, 41,2)
+input_dim = (60, 41, 2)
 
 # Creating Keras Model and Testing
 model = Sequential()
@@ -148,8 +149,8 @@ print(score)
 history_dict = history.history
 history_dict.keys()
 
-acc = history_dict['acc']
-val_acc = history_dict['val_acc']
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
 loss = history_dict['loss']
 val_loss = history_dict['val_loss']
 
