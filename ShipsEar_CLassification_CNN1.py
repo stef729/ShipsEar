@@ -17,7 +17,8 @@ Created on Tue Mar 24 23:23:35 2020
 # ShipsEar - Classification
 # (128,216)维的MFCC特征，求均值，生成128维特征向量
 
-# 90 epoch, train:0.91; test:0.77
+# Mel_spectrogram 90 epoch, test:0.975
+
 
 
 import pandas as pd
@@ -49,7 +50,7 @@ import glob
 import skimage
 
 path = 'D:/Project/Sound/ShipsEar/Data_frame/'
-df = pd.read_csv(path + 'label_DataFrame.csv', names= ["Name", "ClassID", "ClassID_2"] )
+df = pd.read_csv(path + 'label_DataFrame_2.csv', names= ["Name", "ClassID", "ClassID_2"] )
 print(df.head())
 
 # =============================================================================
@@ -98,15 +99,17 @@ def parser(row):
     # label = all_label.iloc[:,1]
     for i in range(1956):
         file_name = path + current_path[i]
+               
+        
         # Here kaiser_fast is a technique used for faster extraction
         X, sample_rate = librosa.load(file_name, res_type='kaiser_fast') 
         
         # (1) We extract mfcc feature from data
-        mels = librosa.feature.melspectrogram(y=X, sr=sample_rate)
-        logspec = librosa.power_to_db(mels)
+        # mels = librosa.feature.melspectrogram(y=X, sr=sample_rate)
+        # logspec = librosa.power_to_db(mels)
         
         # （2） STFT
-        # logspec = librosa.power_to_db(np.abs(librosa.stft(X)), ref=np.max)
+        logspec = librosa.power_to_db(np.abs(librosa.stft(X)), ref=np.max)
         
         # (3) CQT
         # logspec = librosa.power_to_db(np.abs(librosa.cqt(X, sr=sample_rate)), ref=np.max)
