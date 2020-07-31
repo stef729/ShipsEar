@@ -8,9 +8,7 @@ Created on Mon Apr 20 22:06:18 2020
 # 特征向量：利用MFCC提取（60，41）维特征，再提取一阶差分，组成特征向量（60，41，2）
 # 样本容量：采用滑窗，每段5s音频提取多个帧，帧移长度 window_size：512*40
 # train：7335； test：2445
-# 90个epoch训练，每次14s
-# （1）最终结果：5各类别，loss:0.28; accuracy:0.92
-# （2）标注数据按照12个类被训练，识别结果[0.23, 0.928]
+# LSTM, 5 class, Test accuracy 0.867
 
 
 import pandas as pd
@@ -91,7 +89,7 @@ if __name__ == '__main__':
     
     path = 'D:/Project/Sound/ShipsEar/Data_frame/'
     current_path = os.listdir(path)[:-2]
-    df = pd.read_csv(path + 'label_DataFrame.csv', names= ["Name", "ClassID", "ClassID_2"] )
+    df = pd.read_csv(path + 'label_DataFrame_2.csv', names= ["Name", "ClassID", "ClassID_2"] )
     
     feature = []
     labels = []
