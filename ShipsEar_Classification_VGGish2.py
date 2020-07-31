@@ -5,7 +5,7 @@ Created on Mon Apr 20 22:06:18 2020
 @author: Administrator
 """
 
-# VGGish 
+# VGGish, Test accuracy  0.78
 
 
 import pandas as pd
@@ -83,7 +83,7 @@ def extract_features(path,file_ext="*.wav",bands = 60, frames = 41):
 
     for i in range(1956):
         file_name = path + current_path[i]
-        label = df["ClassID_2"][i]
+        label = df["ClassID"][i]
         sound_clip,s = librosa.load(file_name)
         for (start,end) in windows(sound_clip,window_size):
             if(len(sound_clip[start:end]) == window_size):
@@ -105,22 +105,7 @@ def extract_features(path,file_ext="*.wav",bands = 60, frames = 41):
     # features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams))), axis = 3)    
     return np.array(log_specgrams), np.array(labels,dtype = np.int)
                 
-                
-                
 
-    # log_specgrams = np.asarray(log_specgrams).reshape(len(log_specgrams),bands,frames,1)
-    # # 一阶差分， 二维
-    # features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams))), axis = 3)
-    # # 二阶差分，三维
-    # # features = np.concatenate((log_specgrams, np.zeros(np.shape(log_specgrams)), np.zeros(np.shape(log_specgrams))), axis = 3)
-    # for i in range(len(features)):
-    #     # 一阶差分
-    #     features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0])
-    #     # 二阶差分
-    #     # features[i, :, :, 1] = librosa.feature.delta(features[i, :, :, 0], width=3, order=1) # 一阶差分
-    #     # features[i, :, :, 2] = librosa.feature.delta(features[i, :, :, 0], width=3, order=2) # 二阶差分
-    # return np.array(features), np.array(labels,dtype = np.int)
-        
 
 
 # 特征提取
@@ -128,19 +113,19 @@ if __name__ == '__main__':
     
     path = 'D:/Project/Sound/ShipsEar/Data_frame/'
     current_path = os.listdir(path)[:-2]
-    df = pd.read_csv(path + 'label_DataFrame.csv', names= ["Name", "ClassID", "ClassID_2"] )
+    df = pd.read_csv(path + 'label_DataFrame_2.csv', names= ["Name", "ClassID", "ClassID_2"] )
     
     feature = []
     labels = []
     
-    if not os.path.isfile('D:/Project/Sound/ShipsEar/CNN_feature_VGGish_12c.npy'): 
+    if not os.path.isfile('D:/Project/Sound/ShipsEar/CNN_feature_VGGish_5c.npy'): 
         data_features,labels = extract_features(path)
         data_labels = one_hot_encode(labels)
-        np.save('CNN_feature_VGGish_12c',data_features)
-        np.save('CNN_label_VGGish_12c', data_labels)
+        np.save('CNN_feature_VGGish_5c',data_features)
+        np.save('CNN_label_VGGish_5c', data_labels)
     else:
-        data_features = np.load('D:/Project/Sound/ShipsEar/CNN_feature_VGGish_12c.npy')
-        data_labels = np.load('D:/Project/Sound/ShipsEar/CNN_label_VGGish_12c.npy')
+        data_features = np.load('D:/Project/Sound/ShipsEar/CNN_feature_VGGish_5c.npy')
+        data_labels = np.load('D:/Project/Sound/ShipsEar/CNN_label_VGGish_5c.npy')
     
     
     
@@ -172,7 +157,7 @@ model.add(BatchNormalization())
 model.add(Dense(128, activation = "relu"))
 model.add(Dropout(0.3)) 
 # model.add(BatchNormalization())
-model.add(Dense(12, activation = "softmax"))
+model.add(Dense(5, activation = "softmax"))
 model.summary()
 
 model.compile(optimizer = 'Adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
